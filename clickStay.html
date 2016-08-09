@@ -445,7 +445,23 @@ console.log(geojsonFeature.features.length)
 		}
 
 		//highlighting the map feature. just changes outline color, and updates the info box with the data of the thing you're highlighting
+		var click = false;
+		var clicked = [];
+		var country = null;
 		function highlightFeature(e) {
+			//fix this
+			if(click === true && e.target === country){
+				clicked.push(e);
+				console.log("blah");
+				geojson.resetStyle(e.target);
+				click = false;
+			}
+			else if(click === true && e.target != country){
+				resetHighlight(e.target);
+				country = e.target;
+				click = false;
+			}
+
 		    var layer = e.target;
 
 		    layer.setStyle({
@@ -455,27 +471,46 @@ console.log(geojsonFeature.features.length)
 		        fillOpacity: 0.2
 		    });
 		     info.update(layer.feature.properties);
-
+		     click = true;
+		     clicked.push(e);
+		     console.log(clicked);
+		 
 		}
 
 		//setting up the variable info
 		var info = L.control();
 		function resetHighlight(e) {
-   			geojson.resetStyle(e.target);
+			for(var i = 0; i < clicked.length; i++){
+   				geojson.resetStyle(clicked[i].target);
+   				clicked.splice(i, 1);
+   				console.log("worked");
+   		}
    			info.update();
 		}
 
-		//method offered by leaflet, i just copied off of website
 		function zoomToFeature(e) {
    			 mymap.fitBounds(e.target.getBounds());
 			}
+
+		//method offered by leaflet, i just copied off of website
+
 		function onEachFeature(feature, layer) {
 		    layer.on({
-		        mouseover: highlightFeature,
-		        mouseout: resetHighlight,
-		        click: zoomToFeature
+		        click: highlightFeature,
+		        dblclick: zoomToFeature
 		    });
 		}
+
+		function searchNode(){
+	var name = document.getElementById('search').value;
+	for(var i = 0; i < geojsonFeature.features.length; i++){
+		var country = geojsonFeature.features[i].properties;
+		if(name.toUpperCase() === country.name.toUpperCase()){
+
+			info.update(country);
+		}
+	}
+}
 		var info = L.control();
 		
 info.onAdd = function (mymap) {
@@ -557,16 +592,6 @@ info.addTo(mymap);
 		    onEachFeature: onEachFeature
 		}).addTo(mymap);
 
-function searchNode(){
-	var name = document.getElementById('search').value;
-	for(var i = 0; i < geojsonFeature.features.length; i++){
-		var country = geojsonFeature.features[i].properties;
-		if(name.toUpperCase() === country.name.toUpperCase()){
-			
-			info.update(country);
-		}
-	}
-}
 	</script>
 </body>
 
